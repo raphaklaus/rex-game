@@ -28,7 +28,8 @@ module.exports = {
       test: /p2\.js/, loader: 'expose?p2'}
     ],
     noParse: [
-      path.resolve(__dirname, 'node_modules/phaser/build/phaser.js')
+      path.resolve(__dirname, 'node_modules/phaser/build/phaser.js'),
+      path.resolve(__dirname, 'node_modules/phaser/build/custom/p2.js')
     ]
   },
   resolve: {
