@@ -1,8 +1,10 @@
 import 'pixi';
 import 'p2';
 import Phaser from 'phaser';
+import '../styles/font.css';
 import BootState from './states/boot.js';
 import GameState from './states/game.js';
+
 
 class Game extends Phaser.Game {
   constructor() {
