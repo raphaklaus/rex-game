@@ -1,5 +1,6 @@
 const path = require('path'),
   HtmlWebPackPlugin = require('html-webpack-plugin'),
+  ExtractTextPlugin = require('extract-text-webpack-plugin'),
   phaserModule = path.join(__dirname, '/node_modules/phaser/'),
   phaser = path.join(phaserModule, 'build/custom/phaser-split.js'),
   pixi = path.join(phaserModule, 'build/custom/pixi.js'),
@@ -21,6 +22,12 @@ module.exports = {
         presets: ['es2015']
       }
     }, {
+      test:/\.woff$/,
+      loader: 'file?name=[name].[ext]'
+    }, {
+      test: /\.css$/,
+      loader: ExtractTextPlugin.extract('style', 'css-loader')
+    }, {
       test: /pixi\.js/, loader: 'expose?PIXI'
     }, {
       test: /phaser-split\.js$/, loader: 'expose?Phaser'
@@ -40,6 +47,7 @@ module.exports = {
     }
   },
   plugins: [
+    new ExtractTextPlugin('bundle.css'),
     new HtmlWebPackPlugin({template: 'index.html'})
   ]
 };
