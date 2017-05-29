@@ -41,23 +41,28 @@ export default class GameState extends Phaser.State {
     this.physics.startSystem(Phaser.Physics.ARCADE);
 
     this.physics.enable([this.gameObjects.rex, this.gameObjects.ground,
-      this.gameObjects.secondaryGround, this.gameObjects.cacti], Phaser.Physics.ARCADE);
+      this.gameObjects.secondaryGround], Phaser.Physics.ARCADE);
 
     this.physics.arcade.gravity.y = 1800;
 
     this.gameObjects.ground.body.allowGravity = false;
     this.gameObjects.ground.body.immovable = true;
 
-    this.gameObjects.cacti.body.allowGravity = false;
-    this.gameObjects.cacti.body.immovable = true;
+    // this.gameObjects.cacti.body.allowGravity = false;
+    // this.gameObjects.cacti.body.immovable = true;
 
-    this.gameObjects.rex.body.setSize(this.gameObjects.rex.width - 20,
-      this.gameObjects.rex.height, 10, 0);
+    // this.gameObjects.rex.body.friction.x = 1000;
+    // this.gameObjects.rex.body.friction.y = 3000;
+    // this.gameObjects.rex.body.mass = 0;
+    // this.gameObjects.rex.body.drag.y = 1000;
+
+    // this.gameObjects.rex.body.setSize(this.gameObjects.rex.width - 20,
+    //   this.gameObjects.rex.height, 10, 0);
 
     this.adjustsCacti();
 
-    this.gameObjects.cacti.body.setSize(this.gameObjects.cacti.randomWidth,
-        this.gameObjects.cacti.height, 0, 0);
+    // this.gameObjects.cacti.body.setSize(this.gameObjects.cacti.randomWidth,
+    //     this.gameObjects.cacti.height, 0, 0);
 
     this.gameObjects.ground.body.setSize(this.gameObjects.ground.width,
       this.gameObjects.ground.height, 0, 10);
@@ -73,7 +78,7 @@ export default class GameState extends Phaser.State {
     this.gameObjects.rex.animations.add('walk', [2, 3], 10);
     this.gameObjects.rex.animations.add('dead', [4], 10);
 
-    // this.gameObjects.cacti.getBounds = this.getSpecificBounds.bind(null, this.gameObjects.cacti);
+    this.gameObjects.cacti.getBounds = this.getSpecificBounds.bind(null, this.gameObjects.cacti);
 
     this.gameObjects.rex.getBounds = () => {
       return new Phaser.Rectangle(this.gameObjects.rex.x + 10, this.gameObjects.rex.y,
@@ -83,12 +88,61 @@ export default class GameState extends Phaser.State {
     this.gameObjects.secondaryGround.visible = false;
 
     this.keys = {
-      space: this.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR)
+      space: {
+        jumping: false
+      }
     };
 
     this.time.events.loop(100, this.calculateScore, this);
+    // this.game.physics.desiredFps = 60;
 
-    this.keys.space.onDown.add(() => {
+    // this.keys.space.onDown.add(() => {
+      // if (this.gameState.gameover) {
+      //   this.gameState.gameover = false;
+      //   this.gameState.started = true;
+      //   this.adjustsCacti();
+      //   this.gameObjects.rex.y = 83;
+      //   this.physics.arcade.isPaused = false;
+      //   this.gameObjects.score = 0;
+      // } else if (this.gameState.gamePlayStarted && this.gameObjects.rex.body.touching.down) {
+      //   this.gameObjects.rex.body.velocity.y = -600;
+      //   console.log(this.gameObjects.rex.body.velocity.x);
+      //   console.log('counter', this.counter);
+      // } else if (!this.gameState.started) {
+      //   this.gameState.started = true;
+      //   let tween = this.add.tween(this.gameObjects.rex).to({x: this.gameObjects.rex.body.x + 20},
+      //     600, Phaser.Easing.Linear.None, true);
+      //
+      //   tween.onComplete.add(() => {
+      //     this.gameState.gamePlayStarted = true;
+      //   });
+      // }
+    // });
+
+    this.counter = 0;
+  }
+
+  update () {
+    this.counter++;
+    this.physics.arcade.collide(this.gameObjects.rex,
+      [this.gameObjects.ground, this.gameObjects.secondaryGround]);
+
+    if (this.gameState.gamePlayStarted) {
+      if (this.keys.space.jumping && this.gameObjects.rex.body.touching.down) {
+        console.log('wow', this.gameObjects.rex.body.touching.down);
+        this.keys.space.jumping = false;
+      }
+
+      if (this.keys.space.jumping) {
+        console.log('jumping true', this.counter);
+        this.gameObjects.rex.body.velocity.x = 0;
+      } else {
+        console.log('jumping false', this.counter);
+        this.gameObjects.rex.body.velocity.x = 300;
+      }
+    }
+
+    if (this.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR))
       if (this.gameState.gameover) {
         this.gameState.gameover = false;
         this.gameState.started = true;
@@ -96,32 +150,34 @@ export default class GameState extends Phaser.State {
         this.gameObjects.rex.y = 83;
         this.physics.arcade.isPaused = false;
         this.gameObjects.score = 0;
-      } else if (this.gameState.gamePlayStarted && this.gameObjects.rex.body.touching.down) {
+      } else if (this.gameState.gamePlayStarted && this.gameObjects.rex.body.touching.down &&
+                !this.keys.space.jumping) {
+        this.keys.space.jumping = true;
+        console.log('entered?');
         this.gameObjects.rex.body.velocity.x = 0;
         this.gameObjects.rex.body.velocity.y = -600;
+        console.log(this.gameObjects.rex.body.velocity.x);
+        console.log('counter', this.counter);
       } else if (!this.gameState.started) {
         this.gameState.started = true;
         let tween = this.add.tween(this.gameObjects.rex).to({x: this.gameObjects.rex.body.x + 20},
-          600, Phaser.Easing.Linear.None, true);
+                  600, Phaser.Easing.Linear.None, true);
 
         tween.onComplete.add(() => {
           this.gameState.gamePlayStarted = true;
+          this.gameObjects.rex.body.velocity.x = 300;
+          console.log('tween', this.counter);
         });
       }
-    });
-  }
 
-  update () {
-    this.physics.arcade.collide(this.gameObjects.rex,
-      [this.gameObjects.ground, this.gameObjects.secondaryGround]);
+    // this.physics.arcade.collide(this.gameObjects.rex, this.gameObjects.cacti, this.gameOver.bind(this));
 
-    this.physics.arcade.collide(this.gameObjects.rex, this.gameObjects.cacti, this.gameOver.bind(this));
-
-    // if (this.checkOverlap(this.gameObjects.rex, this.gameObjects.cacti))
-      // this.gameOver();
+    if (this.checkOverlap(this.gameObjects.rex, this.gameObjects.cacti))
+      this.gameOver();
 
     if (this.gameObjects.cacti.right <= 0 && this.gameState.started && !this.gameState.gameover)
       this.adjustsCacti();
+
 
     if (this.gameObjects.ground.body.right <= this.game.width)
       this.gameObjects.secondaryGround.visible = true;
@@ -137,11 +193,7 @@ export default class GameState extends Phaser.State {
 
     if (this.gameState.started) {
       this.gameObjects.ground.body.velocity.x = -300;
-      this.gameObjects.cacti.body.velocity.x = -300;
-    }
-
-    if (this.gameObjects.rex.body.touching.down && this.gameState.gamePlayStarted) {
-      this.gameObjects.rex.body.velocity.x = 300;
+      this.gameObjects.cacti.x -= 1;
     }
 
     if (this.input.keyboard.isDown(Phaser.Keyboard.DOWN))
@@ -164,8 +216,8 @@ export default class GameState extends Phaser.State {
     this.gameObjects.cacti.randomWidth = this.misc.cactiWidthSampleSpace[this.rnd
         .integerInRange(0, this.misc.cactiWidthSampleSpace.length - 1)];
     this.gameObjects.cacti.x = 600;
-    this.gameObjects.cacti.body.setSize(this.gameObjects.cacti.randomWidth,
-        this.gameObjects.cacti.height, 0, 0);
+    // this.gameObjects.cacti.body.setSize(this.gameObjects.cacti.randomWidth,
+    //     this.gameObjects.cacti.height, 0, 0);
     this.gameObjects.cacti.crop(new Phaser.Rectangle(0, 0,
       this.gameObjects.cacti.randomWidth, 100));
   }
@@ -189,8 +241,10 @@ export default class GameState extends Phaser.State {
   }
 
   render() {
-    this.game.debug.body(this.gameObjects.rex);
-    this.game.debug.body(this.gameObjects.cacti);
+    this.game.debug.spriteBounds(this.gameObjects.rex);
+    this.game.debug.spriteBounds(this.gameObjects.cacti);
+    this.game.debug.text(this.gameObjects.rex.body.x, 10, 10);
+    // console.log(this.gameObjects.rex.body.moves);
     // this.game.debug.key(this.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR), 10, 10);
     // this.game.debug.body(this.gameObjects.secondaryGround);
   }

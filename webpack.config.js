@@ -24,7 +24,13 @@ module.exports = {
     }, {
       test:/\.woff$/,
       loader: 'file?name=[name].[ext]'
-    }, {
+    }, 
+    {
+      test: /\.(png|jpeg|jpg|gif)$/,
+      include: path.join(__dirname, 'assets/'),
+      loader: 'file?name=assets/[name].[ext]&context=assets/'
+    },
+    {
       test: /\.css$/,
       loader: ExtractTextPlugin.extract('style', 'css-loader')
     }, {
